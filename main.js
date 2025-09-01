@@ -1,5 +1,5 @@
 import { html } from "lit-html";
-import { component, useState, useEffect } from "@pionjs/pion";
+import { component, useState, useEffect, useLayoutEffect } from "@pionjs/pion";
 
 const API_URL = "https://www.thecocktaildb.com/api/json/v1/1/search.php?s=";
 const TEXTS_PLACEHOLDERS = {
@@ -11,9 +11,10 @@ const TEXTS_PLACEHOLDERS = {
   INGREDIENTS: "Ingredients",
   ADD_TO_CART: "Add to Cart",
   SHOPPING_LIST: "Shopping List",
-  PRINT: "Print",
+  PRINT: "Print ingredients",
   INGREDIENTS_ADDED_TO_SHOPPING_LIST: "Ingredients added to shopping list",
   HERE_ARE_THE_RESULTS: "Here are the results",
+  FAILED_TO_FETCH: "Failed to fetch cocktails",
 };
 
 function CocktailAssistant() {
@@ -24,6 +25,7 @@ function CocktailAssistant() {
   const [ingredientsCart, setIngredientsCart] = useState([]);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [toasterText, setToasterText] = useState("");
+  const [search, setSearch] = useState(false);
 
   const printShoppingList = () => {
     setDialogVisible(!dialogVisible);
@@ -51,26 +53,37 @@ function CocktailAssistant() {
   };
 
   const fetchAllCocktails = async () => {
-    if (!query) return;
+    setSearch(false);
+    if (!query) {
+      setSearch(false);
+      setCocktails([]);
+      return;
+    }
 
     try {
       setToasterText(TEXTS_PLACEHOLDERS.LOADING);
       setToaster(true);
+      setSearch(false);
 
       const response = await fetch(API_URL + query);
       const data = await response.json();
       if (data) {
+        setSearch(true);
         if (Array.isArray(data.drinks) && data.drinks.length > 0) {
           setToasterText(TEXTS_PLACEHOLDERS.HERE_ARE_THE_RESULTS);
           setCocktails(data?.drinks || []);
           return;
+        } else {
+          setCocktails([]);
         }
-        setToaster(false);
+        setToaster(true);
+        setToasterText(TEXTS_PLACEHOLDERS.NO_RESULTS);
       }
     } catch (err) {
       console.error(err);
       setToaster(false);
-      setError("Failed to fetch cocktails");
+      setSearch(false);
+      setError(TEXTS_PLACEHOLDERS.FAILED_TO_FETCH);
     }
   };
 
@@ -79,6 +92,17 @@ function CocktailAssistant() {
       setToaster(false);
     }
   }, [ingredientsCart]);
+
+  useEffect(() => {
+    if (!query) {
+      console.log("here");
+      setSearch(false);
+      setCocktails([]);
+      setIngredientsCart([]);
+      setToaster(false);
+      setDialogVisible(false);
+    }
+  }, [query]);
 
   return html`
     <style>
@@ -120,19 +144,31 @@ function CocktailAssistant() {
 
       .results-container .shopping-list {
         width: 20%;
-        border: solid 1px #ddd;
+        border: solid 1px #ccc;
         padding: 5px 10px;
         border-radius: 5px;
         margin-bottom: 10px;
+        background: #f9f9f9;
       }
+
       .results-container .shopping-list ul {
         padding: 0;
         list-style: none;
       }
+
       .results-container .shopping-list .cart-item {
         display: flex;
         justify-content: space-between;
         padding: 5px 0;
+      }
+
+      .results-container .shopping-list button {
+        cursor: pointer;
+        border: none 0;
+        background: black;
+        color: white;
+        border-radius: 5px;
+        padding: 5px;
       }
 
       .cocktails {
@@ -146,6 +182,7 @@ function CocktailAssistant() {
         border: 1px solid #ccc;
         padding: 1rem;
         background: #f9f9f9;
+        border-radius: 5px;
       }
 
       .cocktails .card .media {
@@ -193,7 +230,7 @@ function CocktailAssistant() {
           ${TEXTS_PLACEHOLDERS.SEARCH}
         </button>
       </div>
-      ${toaster && cocktails.length === 0
+      ${search && cocktails.length === 0
         ? html`<div class="no-results">${TEXTS_PLACEHOLDERS.NO_RESULTS}</div>`
         : html`<div class="results-container">
             <div class="cocktails">
