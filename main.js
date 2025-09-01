@@ -95,7 +95,6 @@ function CocktailAssistant() {
 
   useEffect(() => {
     if (!query) {
-      console.log("here");
       setSearch(false);
       setCocktails([]);
       setIngredientsCart([]);
