@@ -1,0 +1,21 @@
+{
+  "name": "plumelo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx owc-dev-server --app-index index.html --open --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@pionjs/pion": "^2.8.3",
+    "express": "^5.1.0",
+    "lit-html": "^3.3.1"
+  },
+  "devDependencies": {
+    "owc-dev-server": "^1.0.1"
+  }
+}
