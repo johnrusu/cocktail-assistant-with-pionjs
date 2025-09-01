@@ -1,5 +1,5 @@
 import { html } from "lit-html";
-import { component, useState, useEffect, useLayoutEffect } from "@pionjs/pion";
+import { component, useState, useEffect } from "@pionjs/pion";
 
 const API_URL = "https://www.thecocktaildb.com/api/json/v1/1/search.php?s=";
 const TEXTS_PLACEHOLDERS = {
